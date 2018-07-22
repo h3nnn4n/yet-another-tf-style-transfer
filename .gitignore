@@ -2,3 +2,7 @@
 __pycache__
 .*.sw?
 *.npy
+*.mat
+*.png
+*.jpg
+.ipynb_checkpoints/
