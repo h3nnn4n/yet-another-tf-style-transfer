@@ -15,13 +15,13 @@ def content_layer_loss(p, x, content_loss_function=1):
     return loss
 
 
-def sum_content_losses(sess, net, content_img, content_layers, content_layer_weights):
+def sum_content_losses(sess, net, content_img, config):
     sess.run(net['input'].assign(content_img))
     content_loss = 0.
-    for layer, weight in zip(content_layers, content_layer_weights):
+    for layer, weight in zip(config.content_layers, config.content_layer_weights):
         p = sess.run(net[layer])
         x = net[layer]
         p = tf.convert_to_tensor(p)
         content_loss += content_layer_loss(p, x) * weight
-    content_loss /= float(len(content_layers))
+    content_loss /= float(len(config.content_layers))
     return content_loss

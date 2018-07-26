@@ -22,9 +22,9 @@ class config:
         self.content_layers = ['conv3_2', 'conv4_2', 'conv5_2']
         self.content_layer_weights = self.normalize([0, 1, 0])
 
-        self.optimizer_to_use = 'lbfgs'
+        self.optimizer_to_use = 'adam'
 
-        self.max_iterations = 1500
+        self.max_iterations = 10
 
         self.original_colors = False
         self.color_convert_type = 'luv'
@@ -35,6 +35,8 @@ class config:
         self.time_string = datetime.datetime.fromtimestamp(time.time()).strftime('%m_%d_%H_%M_%S')
         self.random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         self.output_name = 'out_%s_%s.png' % (self.time_string, self.random_string)
+
+        self.device = '/cpu:0'
 
     def normalize(self, target):
         m = np.mean(target)

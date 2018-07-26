@@ -19,7 +19,7 @@ def gram_matrix(x, area, depth):
     return G
 
 
-def sum_style_losses(sess, net, style_imgs, style_layers, style_layer_weights):
+def sum_style_losses(sess, net, style_imgs, config):
     total_style_loss = 0.
     weights = [1.0]
 
@@ -27,13 +27,13 @@ def sum_style_losses(sess, net, style_imgs, style_layers, style_layer_weights):
         sess.run(net['input'].assign(img))
         style_loss = 0.
 
-        for layer, weight in zip(style_layers, style_layer_weights):
+        for layer, weight in zip(config.style_layers, config.style_layer_weights):
             a = sess.run(net[layer])
             x = net[layer]
             a = tf.convert_to_tensor(a)
             style_loss += style_layer_loss(a, x) * weight
 
-        style_loss /= float(len(style_layers))
+        style_loss /= float(len(config.style_layers))
         total_style_loss += (style_loss * img_weight)
 
     total_style_loss /= float(len(style_imgs))

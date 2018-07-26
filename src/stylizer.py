@@ -1,6 +1,8 @@
 import tensorflow as tf
+import numpy as np
 import time
 
+import utils
 import model
 import content
 import style
@@ -15,7 +17,7 @@ def run(config):
         init_img = images.get_noise_image(1.0, content_img)
 
         tick = time.time()
-        stylize(content_img, style_imgs, init_img)
+        stylize(content_img, style_imgs, init_img, config)
         tock = time.time()
         print('Single image elapsed time: {}'.format(tock - tick))
 
@@ -24,11 +26,11 @@ def run(config):
 
 
 def stylize(content_img, style_imgs, init_img, config):
-    with tf.device('/gpu:0'), tf.Session() as sess:
+    with tf.device(config.device), tf.Session() as sess:
         net = model.build_model(content_img)
 
-        L_style = style.sum_style_losses(sess, net, style_imgs)
-        L_content = content.sum_content_losses(sess, net, content_img)
+        L_style = style.sum_style_losses(sess, net, style_imgs, config)
+        L_content = content.sum_content_losses(sess, net, content_img, config)
         L_tv = tf.image.total_variation(net['input'])
 
         alpha = config.content_weight
@@ -37,19 +39,19 @@ def stylize(content_img, style_imgs, init_img, config):
 
         L_total  = alpha * L_content + beta * L_style + theta * L_tv
 
-        optimizer = get_optimizer(L_total)
+        optimizer = get_optimizer(L_total, config)
 
-        if optimizer_to_use == 'adam':
-            minimize_with_adam(sess, net, optimizer, init_img, L_total)
-        elif optimizer_to_use == 'lbfgs':
-            minimize_with_lbfgs(sess, net, optimizer, init_img)
+        if config.optimizer_to_use == 'adam':
+            minimize_with_adam(sess, net, optimizer, init_img, L_total, config)
+        elif config.optimizer_to_use == 'lbfgs':
+            minimize_with_lbfgs(sess, net, optimizer, init_img, config)
 
         output_img = sess.run(net['input'])
 
-        if original_colors:
-            output_img = convert_to_original_colors(np.copy(content_img), output_img)
+        if config.original_colors:
+            output_img = images.convert_to_original_colors(np.copy(content_img), output_img)
 
-        write_image_output(output_img, content_img, style_imgs, init_img)
+        utils.write_image_output(output_img, content_img, style_imgs, init_img)
 
 
 def minimize_with_lbfgs(sess, net, optimizer, init_img):
@@ -62,7 +64,7 @@ def minimize_with_lbfgs(sess, net, optimizer, init_img):
     optimizer.minimize(sess)
 
 
-def minimize_with_adam(sess, net, optimizer, init_img, loss, max_iterations):
+def minimize_with_adam(sess, net, optimizer, init_img, loss, config):
     if True:
         print('\nMINIMIZING LOSS USING: ADAM OPTIMIZER')
 
@@ -71,20 +73,20 @@ def minimize_with_adam(sess, net, optimizer, init_img, loss, max_iterations):
     sess.run(init_op)
     sess.run(net['input'].assign(init_img))
     iterations = 0
-    while (iterations < max_iterations):
+    while (iterations < config.max_iterations):
         sess.run(train_op)
-        if iterations % 50 == 0 or iterations == max_iterations - 1:
+        if iterations % 50 == 0 or iterations == config.max_iterations - 1:
             curr_loss = loss.eval()
             print("At iterate {}\tf=  {}".format(iterations, curr_loss))
         iterations += 1
 
 
-def get_optimizer(loss, max_iterations, optimizer_to_use='adam'):
+def get_optimizer(loss, config):
     print_iterations = 50
-    if optimizer_to_use == 'lbfgs':
+    if config.optimizer_to_use == 'lbfgs':
         optimizer = tf.contrib.opt.ScipyOptimizerInterface(
             loss, method='L-BFGS-B',
-            options={'maxiter': max_iterations, 'disp': print_iterations})
-    elif optimizer_to_use == 'adam':
+            options={'maxiter': config.max_iterations, 'disp': print_iterations})
+    elif config.optimizer_to_use == 'adam':
         optimizer = tf.train.AdamOptimizer(10)
     return optimizer
