@@ -51,7 +51,7 @@ def stylize(content_img, style_imgs, init_img, config):
         if config.original_colors:
             output_img = images.convert_to_original_colors(np.copy(content_img), output_img)
 
-        utils.write_image_output(output_img, content_img, style_imgs, init_img)
+        utils.write_image_output(output_img, content_img, style_imgs, init_img, config.output_name)
 
 
 def minimize_with_lbfgs(sess, net, optimizer, init_img):
