@@ -36,7 +36,7 @@ class config:
         self.random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         self.output_name = 'out_%s_%s.png' % (self.time_string, self.random_string)
 
-        self.device = '/cpu:0'
+        self.device = '/gpu:0'
 
     def normalize(self, target):
         m = np.mean(target)
