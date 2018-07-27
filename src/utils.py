@@ -64,6 +64,7 @@ def write_image_output(output_img, content_img, style_imgs, init_img, output_nam
     content_path = os.path.join(out_dir, 'content.png')
     init_path = os.path.join(out_dir, 'init.png')
 
+    write_image('out.png', output_img)
     write_image(img_path, output_img)
     write_image(content_path, content_img)
     write_image(init_path, init_img)
