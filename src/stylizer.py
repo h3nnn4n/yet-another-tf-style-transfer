@@ -34,17 +34,32 @@ def stylize(content_img, style_imgs, init_img, config):
         L_tv = tf.image.total_variation(net['input'])
 
         alpha = config.content_weight
-        beta  = config.style_weight
+        beta = config.style_weight
         theta = config.tv_weight
 
-        L_total  = alpha * L_content + beta * L_style + theta * L_tv
+        L_total = 0
+
+        if alpha > 0:
+            L_total += alpha * L_content
+        else:
+            print('Content not being used')
+
+        if beta > 0:
+            L_total += beta * L_style
+        else:
+            print('Style not being used')
+
+        if theta > 0:
+            L_total += theta * L_tv
+        else:
+            print('Denoise not being used')
 
         optimizer = get_optimizer(L_total, config)
 
         if config.optimizer_to_use == 'adam':
             minimize_with_adam(sess, net, optimizer, init_img, L_total, config)
         elif config.optimizer_to_use == 'lbfgs':
-            minimize_with_lbfgs(sess, net, optimizer, init_img, config)
+            minimize_with_lbfgs(sess, net, optimizer, init_img)
 
         output_img = sess.run(net['input'])
 
