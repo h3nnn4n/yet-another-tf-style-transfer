@@ -22,7 +22,6 @@ def run(config):
         print('Single image elapsed time: {}'.format(tock - tick))
 
     print(config.output_name)
-    #Image(filename=output_name)
 
 
 def stylize(content_img, style_imgs, init_img, config):
